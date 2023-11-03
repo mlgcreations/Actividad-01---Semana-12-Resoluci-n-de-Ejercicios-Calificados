@@ -25,7 +25,7 @@ public class Empleado {
     // Getters y setters podrían ser agregados aquí si fuera necesario
 
     // Método principal para probar la clase
-    public static void ejercicio2(String[] args) {
+    public static void main(String[] args) {
         Empleado empleado = new Empleado();
         empleado.leerDatos(); // El usuario introduce los datos
         empleado.verDatos(); // Se muestran los datos introducidos
