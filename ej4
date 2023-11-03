@@ -1,0 +1,72 @@
+public class Hora {
+    private int horas;
+    private int minutos;
+    private int segundos;
+
+    // Constructor que inicializa a 0.
+    public Hora() {
+        this.horas = 0;
+        this.minutos = 0;
+        this.segundos = 0;
+    }
+
+    // Constructor con valores específicos proporcionados por el usuario.
+    public Hora(int horas, int minutos, int segundos) {
+        this.horas = horas;
+        this.minutos = minutos;
+        this.segundos = segundos;
+    }
+
+    // Métodos de acceso.
+    public int getHoras() {
+        return horas;
+    }
+
+    public void setHoras(int horas) {
+        this.horas = horas;
+    }
+
+    public int getMinutos() {
+        return minutos;
+    }
+
+    public void setMinutos(int minutos) {
+        this.minutos = minutos;
+    }
+
+    public int getSegundos() {
+        return segundos;
+    }
+
+    public void setSegundos(int segundos) {
+        this.segundos = segundos;
+    }
+
+    // Método para avanzar la hora.
+    public void avanzar() {
+        segundos++;
+        if (segundos >= 60) {
+            segundos = 0;
+            minutos++;
+            if (minutos >= 60) {
+                minutos = 0;
+                horas++;
+                if (horas >= 24) {
+                    horas = 0;
+                }
+            }
+        }
+    }
+
+    // Método para poner a cero la hora.
+    public void ponerACero() {
+        this.horas = 0;
+        this.minutos = 0;
+        this.segundos = 0;
+    }
+
+    // Método para visualizar la hora en formato HH:MM:SS.
+    public void visualizar() {
+        System.out.printf("%02d:%02d:%02d\n", horas, minutos, segundos);
+    }
+}
