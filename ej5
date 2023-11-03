@@ -1,0 +1,47 @@
+public class Cadena {
+    private String cadena;
+    private int longitud;
+
+    // Constructor que acepta una cadena de caracteres
+    public Cadena(String cadena) {
+        this.cadena = cadena;
+        this.longitud = cadena.length();
+    }
+
+    // Método de acceso para obtener el carácter en la posición i
+    public char caracter(int i) {
+        if(i >= 0 && i < this.longitud) {
+            return this.cadena.charAt(i);
+        } else {
+            // Aquí podría lanzarse una excepción o manejar el error como se prefiera
+            System.out.println("Índice fuera de rango.");
+            return (char) -1; // Representa un valor inexistente para un índice no válido
+        }
+    }
+
+    // Método para visualizar la cadena
+    public void visualizar() {
+        System.out.println(this.cadena);
+    }
+
+    // Método principal que demuestra el uso de la clase Cadena
+    public static void main(String[] args) {
+        // Crear objetos de tipo Cadena.
+        Cadena cadena1 = new Cadena("Hola Mundo!");
+        Cadena cadena2 = new Cadena("OpenAI");
+        Cadena cadena3 = new Cadena("ChatGPT");
+
+        // Visualizar las cadenas.
+        cadena1.visualizar();
+        cadena2.visualizar();
+        cadena3.visualizar();
+
+        // Acceder a caracteres específicos y mostrarlos en la consola.
+        System.out.println("Carácter en índice 4 de cadena1: " + cadena1.caracter(4));
+        System.out.println("Carácter en índice 3 de cadena2: " + cadena2.caracter(3));
+        System.out.println("Carácter en índice 2 de cadena3: " + cadena3.caracter(2));
+
+        // Intentar acceder a un índice fuera de los límites.
+        cadena2.caracter(10); // Esto imprimirá "Índice fuera de rango."
+    }
+}
