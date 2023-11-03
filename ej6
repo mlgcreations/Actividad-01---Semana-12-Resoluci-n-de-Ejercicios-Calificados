@@ -1,0 +1,302 @@
+LAN.java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract class LAN {
+    protected List<Nodo> nodos;
+    protected Map<Nodo, List<Nodo>> mapaConexiones;
+    protected String topologia;
+
+    public LAN() {
+        nodos = new ArrayList<>();
+        mapaConexiones = new HashMap<>();
+    }
+
+    public void añadirNodo(Nodo nodo) {
+        nodos.add(nodo);
+        mapaConexiones.put(nodo, new ArrayList<>());
+    }
+
+    public void quitarNodo(Nodo nodo) {
+        nodos.remove(nodo);
+        mapaConexiones.remove(nodo);
+        // También quitar este nodo de la lista de conexiones de otros nodos
+        for (List<Nodo> conexiones : mapaConexiones.values()) {
+            conexiones.remove(nodo);
+        }
+    }
+
+    public void enumerarNodos() {
+        if (nodos.isEmpty()) {
+            System.out.println("La red no tiene nodos.");
+        } else {
+            for (Nodo nodo : nodos) {
+                System.out.println(nodo);
+            }
+        }
+    }
+
+    public abstract void configurarRed();
+
+    public void enviarPaquete(Nodo origen, Nodo destino, String paquete) {
+        if (mapaConexiones.containsKey(origen) && mapaConexiones.get(origen).contains(destino)) {
+            System.out.println("Enviando paquete desde " + origen + " a " + destino + ": " + paquete);
+            // Aquí se simularía el proceso de envío de paquete en una red real
+        } else {
+            System.out.println("No se puede enviar el paquete, los nodos no están directamente conectados.");
+        }
+    }
+
+    // Método para conectar dos nodos, puede ser usado por las subclases para configurar la topología
+    protected void conectarNodos(Nodo nodo1, Nodo nodo2) {
+        if (!mapaConexiones.get(nodo1).contains(nodo2)) {
+            mapaConexiones.get(nodo1).add(nodo2);
+        }
+        if (!mapaConexiones.get(nodo2).contains(nodo1)) {
+            mapaConexiones.get(nodo2).add(nodo1);
+        }
+    }
+    
+    // Método para desconectar dos nodos
+    protected void desconectarNodos(Nodo nodo1, Nodo nodo2) {
+        mapaConexiones.get(nodo1).remove(nodo2);
+        mapaConexiones.get(nodo2).remove(nodo1);
+    }
+
+ 
+}
+Nodo.java
+
+
+public class Nodo {
+    private String id;
+    private String direccionIP;
+    private String nombre;
+
+    public Nodo(String id, String direccionIP, String nombre) {
+        this.id = id;
+        this.direccionIP = direccionIP;
+        this.nombre = nombre;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getDireccionIP() {
+        return direccionIP;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setDireccionIP(String direccionIP) {
+        this.direccionIP = direccionIP;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public String toString() {
+        return "Nodo{" +
+               "id='" + id + '\'' +
+               ", direccionIP='" + direccionIP + '\'' +
+               ", nombre='" + nombre + '\'' +
+               '}';
+    }
+}
+
+EstrellaLAN.java
+import java.util.HashMap;
+import java.util.Map;
+
+public class EstrellaLAN extends LAN {
+    private Nodo hubCentral;
+    private Map<String, Nodo> nodos; // Utilizamos un mapa para acceder rápidamente a los nodos por su identificador
+    private long totalTiempoEnvio; // Estadísticas de tiempo de envío
+    private long totalPaquetesEnviados;
+
+    public EstrellaLAN(Nodo hubCentral) {
+        this.hubCentral = hubCentral;
+        this.nodos = new HashMap<>();
+    }
+
+    @Override
+    public void agregarNodo(Nodo nodo) {
+        nodos.put(nodo.getIdentificador(), nodo);
+        System.out.println("Nodo agregado a la red en estrella: " + nodo);
+    }
+
+    @Override
+    public void eliminarNodo(Nodo nodo) {
+        nodos.remove(nodo.getIdentificador());
+        System.out.println("Nodo eliminado de la red en estrella: " + nodo);
+    }
+
+    @Override
+    public void listarNodos() {
+        System.out.println("Hub Central: " + hubCentral);
+        nodos.values().forEach(System.out::println);
+    }
+
+    public void configurarRed(String tipo) {
+        // Configurar la red con el tipo de topología proporcionada (en este caso, siempre será estrella)
+        System.out.println("Configurando la red en una topología de " + tipo);
+    }
+
+    public void enviarPaquete(String idOrigen, String idDestino, String paquete) {
+        Nodo origen = nodos.get(idOrigen);
+        Nodo destino = nodos.get(idDestino);
+        
+        if (origen != null && destino != null) {
+            long startTime = System.nanoTime();
+            
+            // Simulación del envío del paquete.
+            System.out.println("Enviando paquete desde " + origen + " a " + destino + ": " + paquete);
+            destino.recibirPaquete(paquete);
+
+            long tiempoEnvio = System.nanoTime() - startTime;
+            totalTiempoEnvio += tiempoEnvio;
+            totalPaquetesEnviados++;
+
+            System.out.println("Paquete enviado en " + tiempoEnvio + " nanosegundos.");
+        } else {
+            System.out.println("Error: No se puede enviar el paquete, uno o ambos nodos no existen.");
+        }
+    }
+
+    public void difundirPaquete(String idOrigen, String paquete) {
+        Nodo origen = nodos.get(idOrigen);
+        
+        if (origen != null) {
+            nodos.values().forEach(destino -> {
+                if (!destino.equals(origen)) { // No enviar al nodo origen
+                    enviarPaquete(idOrigen, destino.getIdentificador(), paquete);
+                }
+            });
+        } else {
+            System.out.println("Error: Nodo origen no existe para difusión.");
+        }
+    }
+
+    public void mostrarEstadisticas() {
+        double tiempoMedio = totalPaquetesEnviados > 0 ? (double) totalTiempoEnvio / totalPaquetesEnviados : 0.0;
+        System.out.println("Estadísticas de la LAN:");
+        System.out.println("Total de paquetes enviados: " + totalPaquetesEnviados);
+        System.out.println("Tiempo medio de envío: " + tiempoMedio + " nanosegundos.");
+    }
+    
+ 
+}
+BusLAN.java 
+import java.util.HashMap;
+import java.util.Map;
+
+public class BusLAN extends LAN {
+    private Map<String, Nodo> nodos;
+
+    public BusLAN() {
+        nodos = new HashMap<>();
+    }
+
+    @Override
+    public void agregarNodo(Nodo nodo) {
+        nodos.put(nodo.getIdentificador(), nodo);
+        System.out.println("Nodo agregado a la red en bus: " + nodo);
+    }
+
+    @Override
+    public void eliminarNodo(Nodo nodo) {
+        nodos.remove(nodo.getIdentificador());
+        System.out.println("Nodo eliminado de la red en bus: " + nodo);
+    }
+
+    @Override
+    public void listarNodos() {
+        System.out.println("Nodos en la red en bus:");
+        nodos.values().forEach(System.out::println);
+    }
+
+    public void enviarPaquete(String idOrigen, String idDestino, String paquete) {
+        Nodo origen = nodos.get(idOrigen);
+        Nodo destino = nodos.get(idDestino);
+        
+        if (origen != null && destino != null) {
+            System.out.println("Enviando paquete desde " + origen + " a todos los nodos en el bus.");
+            nodos.values().forEach(nodo -> {
+                if (nodo.equals(destino)) { // Solo el destino procesa el paquete
+                    System.out.println("Paquete recibido por el destino: " + nodo);
+                    nodo.recibirPaquete(paquete);
+                }
+            });
+        } else {
+            System.out.println("Error: No se puede enviar el paquete, uno o ambos nodos no existen.");
+        }
+    }
+
+    public void difundirPaquete(String idOrigen, String paquete) {
+        Nodo origen = nodos.get(idOrigen);
+        
+        if (origen != null) {
+            System.out.println("Difundiendo paquete desde " + origen + " a todos los nodos en el bus.");
+            nodos.values().forEach(nodo -> {
+                if (!nodo.equals(origen)) { // No enviar al nodo origen
+                    nodo.recibirPaquete(paquete);
+                }
+            });
+        } else {
+            System.out.println("Error: Nodo origen no existe para difusión.");
+        }
+    }
+    
+    // Estadísticas y métodos adicionales pueden ser implementados similar a EstrellaLAN...
+}
+
+Main.java
+public class Main {
+    public static void main(String[] args) {
+        // Crear nodos
+        Nodo nodo1 = new Nodo("Nodo1");
+        Nodo nodo2 = new Nodo("Nodo2");
+        Nodo nodo3 = new Nodo("Nodo3");
+
+        // Crear LAN de topología Estrella
+        EstrellaLAN estrellaLAN = new EstrellaLAN();
+        estrellaLAN.agregarNodo(nodo1);
+        estrellaLAN.agregarNodo(nodo2);
+
+        // Enviar un paquete en la red Estrella
+        System.out.println("\nEnviando paquete en la red Estrella:");
+        estrellaLAN.enviarPaquete(nodo1.getIdentificador(), nodo2.getIdentificador(), "Hola Nodo2!");
+
+        // Listar nodos en la red Estrella
+        System.out.println("\nListando nodos en la red Estrella:");
+        estrellaLAN.listarNodos();
+
+        // Crear LAN de topología Bus
+        BusLAN busLAN = new BusLAN();
+        busLAN.agregarNodo(nodo2);
+        busLAN.agregarNodo(nodo3);
+
+        // Enviar un paquete en la red Bus
+        System.out.println("\nEnviando paquete en la red Bus:");
+        busLAN.enviarPaquete(nodo2.getIdentificador(), nodo3.getIdentificador(), "Hola Nodo3!");
+
+        // Difundir un paquete en la red Bus
+        System.out.println("\nDifundiendo paquete desde Nodo2 a todos los nodos en la red Bus:");
+        busLAN.difundirPaquete(nodo2.getIdentificador(), "Mensaje a todos!");
+
+        // Listar nodos en la red Bus
+        System.out.println("\nListando nodos en la red Bus:");
+        busLAN.listarNodos();
+    }
+}
